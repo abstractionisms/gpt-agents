@@ -1,10 +1,40 @@
 import discord
 import requests
 import configparser
+import os 
 
-# Load config
+# Set the possible base directories for config.ini
+base_directories = [
+    r'C:\Users\Cameron\Desktop\gpt-agents',
+    '/home/cam/Desktop/gpt-agents'
+]
+
+# Attempt to read the configuration file from each base directory
 config = configparser.ConfigParser()
-config.read('/home/cam/Desktop/gpt-agents/config.ini')
+
+for base_directory in base_directories:
+    config_file_path = os.path.join(base_directory, 'config.ini')
+
+    try:
+        config.read(config_file_path)
+        # If successful, break out of the loop
+        break
+    except FileNotFoundError:
+        # If the file is not found, try the next base directory
+        continue
+    except configparser.Error as e:
+        print(f"Error reading {config_file_path}: {e}")
+        break
+
+# Access API keys from the configuration file
+api_keys = {}
+if 'API_KEYS' in config:
+    for key in config['API_KEYS']:
+        api_keys[key] = config.get('API_KEYS', key)
+
+# Use the API keys as needed in your script
+for key, value in api_keys.items():
+    print(f"{key}: {value}")
 api_key1 = config.get('API_KEYS', 'api_key1')
 api_key3 = config.get('API_KEYS', 'api_key3')  # Discord token
 
