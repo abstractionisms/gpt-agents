@@ -7,7 +7,7 @@ from tkinter.font import Font
 
 #Load config
 config = configparser.ConfigParser()
-config.read('config.ini')
+config.read('/home/cam/Desktop/gpt-agents/config.ini')
 api_key1 = config.get('API_KEYS', 'api_key1')
 api_key2 = config.get('API_KEYS', 'api_key2')
 
@@ -81,10 +81,10 @@ def main():
         root.clipboard_clear()
         root.clipboard_append(output_area.get('1.0', tk.END))
 
-    chat_button = tk.Button(root, text="Chat", command=chat, bg='black', fg='white', font=my_font)
+    chat_button = tk.Button(root, text="Chat", command=chat, bg='black', fg='white', font=my_font, width=10, height=3)
     chat_button.grid(row=1, column=0, sticky=tk.N+tk.S+tk.E+tk.W)
 
-    copy_button = tk.Button(root, text="Copy Output", command=copy_output, bg='black', fg='white', font=my_font)
+    copy_button = tk.Button(root, text="Copy Output", command=copy_output, bg='black', fg='white', font=my_font, width=10, height=3)
     copy_button.grid(row=1, column=1, sticky=tk.N+tk.S+tk.E+tk.W)
 
     output_area = scrolledtext.ScrolledText(root, bg='black', fg='white', font=my_font)
