@@ -2,6 +2,8 @@ import discord
 import requests
 import configparser
 import os
+from datetime import datetime, timedelta
+
 
 # Set the possible base directories for config.ini
 base_directories = [
@@ -45,8 +47,7 @@ def chat_gpt(api_key, prompt, conversation_history=None):
     data = {
         'model': 'gpt-4-1106-preview',
         'messages': messages,
-        'temperature': 0.5,
-        'top_p': 1,
+        'top_p': .05,
         'max_tokens': 2560
     }
     response = requests.post('https://api.openai.com/v1/chat/completions', headers=headers, json=data)
@@ -73,8 +74,7 @@ def chat_cybersecurity(api_key, prompt, conversation_history=None):
     data = {
         'model': 'gpt-4-1106-preview',
         'messages': messages,
-        'temperature': 0.5,
-        'top_p': 1,
+        'top_p': .05,
         'max_tokens': 2560
     }
     response = requests.post('https://api.openai.com/v1/chat/completions', headers=headers, json=data)
@@ -94,6 +94,10 @@ command_handlers = {
 }
 
 class MyClient(discord.Client):
+    def init(self, args, **kwargs):
+        super().init(args, **kwargs)
+        self.last_messages = {}  # Stores the last message for each user
+
     async def on_ready(self):
         print('Logged on as', self.user)
 
@@ -106,14 +110,24 @@ class MyClient(discord.Client):
         if not isinstance(message.channel, discord.channel.DMChannel):
             return
 
+        last_message = self.last_messages.get(message.author.id)
+        if last_message and last_message['timestamp'] > datetime.now() - timedelta(minutes=10):
+            # If the last message was sent within the last 10 minutes, pass its content to the handler
+            previous_message = last_message['content']
+        else:
+            previous_message = None
+
         # process the command
         for prefix, handler in command_handlers.items():
             if message.content.startswith(prefix):
                 command = message.content[len(prefix):].strip()
-                response = handler(api_key1, command)
+                response = handler(api_key1, command, previous_message)
                 break
         else:
             return  # Ignore messages that don't match any command prefix
+
+        # Store the current message
+        self.last_messages[message.author.id] = {'content': message.content, 'timestamp': datetime.now()}
 
         # Check if the response is too long
         if len(response) > 2000:
